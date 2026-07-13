@@ -1,22 +1,23 @@
-import { inject, injectable } from 'tsyringe';
 import { Request, Response } from 'express';
-import { getRedisValueUseCase } from '@UseCases/getRedisValueUseCase';
+import { inject, injectable } from 'tsyringe';
+
+import { getRedisValueUseCase } from './getRedisValueUseCase';
 
 @injectable()
-export class getRedisValue {
+export class getRedisValueController {
 
     constructor(
-        @inject('RedisClient') private redisClient: any 
-    )
+        @inject(getRedisValueUseCase) private useCase: getRedisValueUseCase,
+    ) {}
 
-        async handle(req: Request, res: Response): Promise<void> {
+    async handle(req: Request, res: Response): Promise<void> {
         const { code } = req.params;
 
-        if(!code || code.length > 20) {
-            return res.status(400).send('Bad Request: Formato de código inválido.');
-        }   
+        if (!code || code.length > 20) {
+            res.status(400).send('Bad Request: Formato de código inválido.');
+            return;
+        }
 
-        const result = await getRedisValueUseCase.execute(req, res);
+        await this.useCase.execute(req, res);
     }
-
 }
