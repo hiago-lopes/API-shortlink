@@ -1,0 +1,8 @@
+Funções:
+    Uma unica rota /code - Verificar se existe no redis, se não, verificar no banco. Se existe no redis pegar o original salvar e o click e redirecionar.
+
+    Repository - buscar o shortlinks(fazer a busca dos shortlinks no redis, ou no banco postgres )
+    outro RepositoryClick - Salvar os click no banco.
+
+UseCase - fazer redirect
+Rotas - clickRedirect.ts
