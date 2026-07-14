@@ -17,7 +17,7 @@ export class getRedisValueUseCase {
                 return res.redirect(cached); // cache hit, redireciona para a URL que esta no cache
             }
         
-        const { rows } = await pool.query<{ url: string }>(' SELECT original_url FROM recoverly.short_links WHERE code = $1 LIMIT 1', [code]);
+        const { rows } = await pool.query<{ url: string }>(' SELECT original_url AS url FROM recoverly.short_links WHERE code = $1 LIMIT 1', [code]);
             if (!rows[0]) {
                 return res.status(404).send('Not Found');
             }
