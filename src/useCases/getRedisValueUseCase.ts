@@ -1,31 +1,28 @@
 import { Request, Response } from 'express';
-import { injectable } from 'tsyringe';
-
+import { inject, injectable } from 'tsyringe';
 import { pool } from '../db/conection';
+import {RedisRepository } from '../repositories/Redis/redisRepository';
 
 @injectable()
 export class getRedisValueUseCase {
+    constructor(
+        @inject(RedisRepository) private redis: RedisRepository,
+    ) {}
 
     async execute(req: Request, res: Response) {
         const { code } = req.params;
 
-        try {
-            const query = 'SELECT url FROM short_links WHERE code = $1 LIMIT 1';
-            const { rows } = await pool.query<{ url: string }>(query, [code]);
-
-            const destination = rows[0];
-
-            if (!destination) {
-                return res.status(404).send('Not Found: O link solicitado não existe ou foi desativado.');
+        const cached = await this.redis.get(String(code));
+            if (cached) {
+                return res.redirect(cached); // cache hit, redireciona para a URL que esta no cache
             }
-
-            const destinationUrl = destination.url;
-
-            return res.redirect(destinationUrl);
-
-        } catch (error) {
-            console.error(`[CRITICAL] Falha ao resolver o shortLink '${code}':`, (error as Error).message);
-            return res.status(500).send('Internal Server Error.');
-        }
+        
+        const { rows } = await pool.query<{ url: string }>(' SELECT original_url FROM recoverly.short_links WHERE code = $1 LIMIT 1', [code]);
+            if (!rows[0]) {
+                return res.status(404).send('Not Found');
+            }
+        
+        await this.redis.set(String(code), rows[0].url); //cache miss, salva no cache a url que foi buscada no postgres
+        return res.redirect(rows[0].url);
     }
 }
