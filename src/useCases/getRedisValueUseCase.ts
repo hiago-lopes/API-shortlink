@@ -14,7 +14,7 @@ export class getRedisValueUseCase {
 
     async execute(req: Request, res: Response) {
         const { code } = req.params;
-        const ipAddress = req.ip;
+        const ipAddress = req.ip ?? null;
         const userAgent = req.headers['user-agent'] || null;
         
         const cached = await this.redis.get(String(code));
