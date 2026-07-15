@@ -1,28 +1,35 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
-import { pool } from '../db/conection';
-import {RedisRepository } from '../repositories/Redis/redisRepository';
+import { RedisRepository } from '../repositories/Redis/redisRepository';
+import { ShortLinkRepository } from '../repositories/Postgres/shortLinkRepository';
+import { ClickRepository } from '../repositories/Postgres/clikRepository';
 
 @injectable()
 export class getRedisValueUseCase {
     constructor(
         @inject(RedisRepository) private redis: RedisRepository,
+        @inject(ShortLinkRepository) private shortLinkRepository: ShortLinkRepository,
+        @inject(ClickRepository) private clickRepository: ClickRepository,
     ) {}
 
     async execute(req: Request, res: Response) {
         const { code } = req.params;
-
+        const ipAddress = req.ip;
+        const userAgent = req.headers['user-agent'] || null;
+        
         const cached = await this.redis.get(String(code));
             if (cached) {
-                return res.redirect(cached); // cache hit, redireciona para a URL que esta no cache
+                await this.clickRepository.save({ code: String(code), ipAddress, userAgent });
+                return res.redirect(cached);
             }
         
-        const { rows } = await pool.query<{ url: string }>(' SELECT original_url AS url FROM recoverly.short_links WHERE code = $1 LIMIT 1', [code]);
-            if (!rows[0]) {
-                return res.status(404).send('Not Found');
-            }
+        const shortLink = await this.shortLinkRepository.findByCode(String(code));
+        if (!shortLink) {
+            return res.status(404).send('Not Found: Código não encontrado.');
+        }
         
-        await this.redis.set(String(code), rows[0].url); //cache miss, salva no cache a url que foi buscada no postgres
-        return res.redirect(rows[0].url);
+        await this.redis.set(String(code), shortLink.url); 
+        await this.clickRepository.save({ code: String(code), ipAddress, userAgent });
+        return res.redirect(shortLink.url);
     }
 }

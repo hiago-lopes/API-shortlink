@@ -1,13 +1,10 @@
 import 'dotenv/config';
+import { env } from '../config/env';
 
 import { Pool } from 'pg';
 import { createClient } from 'redis';
 
-const redisUrl = process.env.REDIS_URL;
-
-if (!redisUrl) { //tratamento de exceção para a variável de ambiente Redis não estar definida
-    throw new Error('REDIS_URL não está definida');
-}
+const redisUrl = env.REDIS_URL; // Obtém a URL do Redis a partir das variáveis de ambiente
 
 export const redisClient = createClient({
     url: redisUrl,
