@@ -3,7 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { RedisRepository } from '../repositories/Redis/redisRepository';
 import { ShortLinkRepository } from '../repositories/Postgres/shortLinkRepository';
 import { ClickRepository } from '../repositories/Postgres/clikRepository';
-
+import { randomUUID } from 'crypto';
 @injectable()
 export class getRedisValueUseCase {
     constructor(
@@ -14,22 +14,38 @@ export class getRedisValueUseCase {
 
     async execute(req: Request, res: Response) {
         const { code } = req.params;
-        const ipAddress = req.ip ?? null;
-        const userAgent = req.headers['user-agent'] || null;
         
         const cached = await this.redis.get(String(code));
             if (cached) {
-                await this.clickRepository.save({ code: String(code), ipAddress, userAgent });
-                return res.redirect(cached);
+                const parsed = JSON.parse(cached) as { id: string; userId: string; messageId: string; originalUrl: string };
+                await this.clickRepository.save({
+                    id: randomUUID(),
+                    linkId: parsed.id,
+                    userId: parsed.userId,
+                    messageId: parsed.messageId,
+                });
+                return res.redirect(parsed.originalUrl);
             }
         
         const shortLink = await this.shortLinkRepository.findByCode(String(code));
-        if (!shortLink) {
-            return res.status(404).send('Not Found: Código não encontrado.');
-        }
+            if (!shortLink) {
+                return res.status(404).send('Not Found: Código não encontrado.');
+            }
         
-        await this.redis.set(String(code), shortLink.url); 
-        await this.clickRepository.save({ code: String(code), ipAddress, userAgent });
+        await this.redis.set(String(code), JSON.stringify({
+            id: shortLink.id,
+            userId: shortLink.userId,
+            messageId: shortLink.messageId,
+            originalUrl: shortLink.url,
+        }));
+
+        await this.clickRepository.save({
+            id: randomUUID(),
+            linkId: shortLink.id,
+            userId: shortLink.userId,
+            messageId: shortLink.messageId,
+        });
+        
         return res.redirect(shortLink.url);
     }
 }
