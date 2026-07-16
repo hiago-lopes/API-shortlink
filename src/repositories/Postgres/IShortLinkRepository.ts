@@ -1,4 +1,5 @@
 export interface ShortLink {
+    id: string;
     url: string;
 }
 

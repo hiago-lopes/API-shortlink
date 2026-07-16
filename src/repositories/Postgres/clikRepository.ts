@@ -4,11 +4,10 @@ import { ClickData, IClickRepository } from './IClickRepository';
 
 @injectable()
 export class ClickRepository implements IClickRepository {
-    async save({code, ipAddress, userAgent}: ClickData): Promise<void> {
+    async save({id, linkId, userId, messageId}: ClickData): Promise<void> {
         await pool.query(
-            'INSERT INTO recoverly.clicks (short_link_code, ip_address, user_agent) VALUES ($1, $2, $3)',
-            [code, ipAddress ?? null, userAgent ?? null],
-
+            'INSERT INTO recoverly.short_link_clicks (id, link_id, user_id, message_id) VALUES ($1, $2, $3, $4)',
+            [id, linkId, userId, messageId ?? null]
         );
     }
 }

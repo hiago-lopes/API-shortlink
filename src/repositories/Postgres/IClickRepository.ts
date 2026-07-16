@@ -1,7 +1,8 @@
 export interface ClickData {
-    code: string;
-    ipAddress: string | null;
-    userAgent: string | null;
+    id: string;
+    linkId: string;
+    userId: string;
+    messageId: string;
 }
 
 export interface IClickRepository {
