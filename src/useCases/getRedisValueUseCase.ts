@@ -4,6 +4,7 @@ import { RedisRepository } from '../repositories/Redis/redisRepository';
 import { ShortLinkRepository } from '../repositories/Postgres/shortLinkRepository';
 import { ClickRepository } from '../repositories/Postgres/clikRepository';
 import { randomUUID } from 'crypto';
+import { AppError } from '../errors/AppError';
 @injectable()
 export class getRedisValueUseCase {
     constructor(
@@ -29,7 +30,7 @@ export class getRedisValueUseCase {
         
         const shortLink = await this.shortLinkRepository.findByCode(String(code));
             if (!shortLink) {
-                return res.status(404).send('Not Found: Código não encontrado.');
+                throw new AppError(404, 'Not Found: Código não encontrado.');
             }
         
         await this.redis.set(String(code), JSON.stringify({
