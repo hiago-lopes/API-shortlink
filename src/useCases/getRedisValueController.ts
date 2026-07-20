@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
-import { AppError } from '../errors/AppError';
+import { z } from 'zod';
+import { ZodAppError } from '../errors/ZodAppError';
 
 import { getRedisValueUseCase } from './getRedisValueUseCase';
+
+const paramsSchema = z.object({
+    code: z.string().min(1).max(20),
+});
 
 @injectable()
 export class getRedisValueController {
@@ -12,10 +17,10 @@ export class getRedisValueController {
     ) {}
 
     async handle(req: Request, res: Response): Promise<void> {
-        const { code } = req.params;
 
-        if (!code || code.length > 20) {
-            throw new AppError(400, 'Bad Request: Formato de código inválido.');
+        const result = paramsSchema.safeParse(req.params);
+        if (!result.success) {
+            throw new ZodAppError(result.error);
         }
 
         await this.useCase.execute(req, res);

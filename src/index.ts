@@ -5,6 +5,7 @@ import { routerClickRedirect } from './routes/clickRedirect';
 import { pool, redisClient } from './db/conection';
 import { logger } from './config/logger';
 import { AppError } from './errors/AppError';
+import { ZodAppError } from './errors/ZodAppError';
 
 const app = express();
 const port = env.PORT;
@@ -17,6 +18,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use('/', routerClickRedirect);
 
 app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof ZodAppError) {
+        return res.status(err.statusCode).json({ error: err.message, issues: err.issues });
+    }
     if (err instanceof AppError) {
         return res.status(err.statusCode).json({ error: err.message });
     }
