@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { container } from 'tsyringe';
 
-import { getRedisValueController } from '../useCases/getRedisValueController';
+import { getRedisValueController } from '../UseCases/getRedisValueController';
 
 
 export const routerClickRedirect = Router();

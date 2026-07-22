@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { env } from '../config/env';
+import { env } from '../Config/env';
 
 import { Pool } from 'pg';
 import { createClient } from 'redis';

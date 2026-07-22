@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
-import { RedisRepository } from '../repositories/Redis/redisRepository';
-import { ShortLinkRepository } from '../repositories/Postgres/shortLinkRepository';
-import { ClickRepository } from '../repositories/Postgres/clikRepository';
+import { RedisRepository } from '../Repositories/redis/redisRepository';
+import { ShortLinkRepository } from '../Repositories/Postgres/shortLinkRepository';
+import { ClickRepository } from '../Repositories/Postgres/clikRepository';
 import { randomUUID } from 'crypto';
 import { AppError } from '../errors/AppError';
 @injectable()
