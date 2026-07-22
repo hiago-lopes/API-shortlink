@@ -2,7 +2,8 @@ export interface ShortLink {
     id: string;
     url: string;
     userId: string;
-    messageId: string;
+    messageId: string | null;
+    expiresAt: Date | null;
 }
 
 export interface IShortLinkRepository {

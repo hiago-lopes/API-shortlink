@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'tsyringe';
-import { RedisRepository } from '../repositories/Redis/redisRepository';
-import { ShortLinkRepository } from '../repositories/Postgres/shortLinkRepository';
-import { ClickRepository } from '../repositories/Postgres/clikRepository';
+import { RedisRepository } from '../Repositories/redis/redisRepository';
+import { ShortLinkRepository } from '../Repositories/Postgres/shortLinkRepository';
+import { ClickRepository } from '../Repositories/Postgres/clikRepository';
 import { randomUUID } from 'crypto';
 import { AppError } from '../errors/AppError';
 @injectable()
@@ -32,7 +32,15 @@ export class getRedisValueUseCase {
             if (!shortLink) {
                 throw new AppError(404, 'Not Found: Código não encontrado.');
             }
-        
+
+            if (shortLink.expiresAt && shortLink.expiresAt < new Date()) {
+                throw new AppError(410, 'Gone: Link expirado.');
+            }
+
+            if (!shortLink.messageId) {
+                throw new AppError(422, 'Unprocessable Entity: Link sem mensagem associada.');
+            }
+
         await this.redis.set(String(code), JSON.stringify({
             id: shortLink.id,
             userId: shortLink.userId,

@@ -1,9 +1,9 @@
 import 'reflect-metadata';
-import { env } from './config/env';
+import { env } from './Config/env';
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { routerClickRedirect } from './routes/clickRedirect';
+import { routerClickRedirect } from './Routes/clickRedirect';
 import { pool, redisClient } from './db/conection';
-import { logger } from './config/logger';
+import { logger } from './Config/logger';
 import { AppError } from './errors/AppError';
 import { ZodAppError } from './errors/ZodAppError';
 
